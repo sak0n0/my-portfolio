@@ -76,19 +76,20 @@ if (scrollRuler && mainContent) {
     const rulerTrack = scrollRuler.querySelector(".ruler-track");
     const rulerTicks = scrollRuler.querySelector(".ruler-ticks");
     const rulerLabels = scrollRuler.querySelector(".ruler-number-labels");
-    const rulerCurrent = scrollRuler.querySelector(".ruler-current");
+    const rulerCurrentValue = scrollRuler.querySelector(".ruler-current-value");
     const rulerSectionNav = scrollRuler.querySelector(".ruler-section-nav");
     let pageSections = [];
-    let sectionPositions = new Map();
     let sectionButtons = new Map();
     let animationFramePending = false;
     let lastProgressPercent = -1;
+    let lastFlipAt = 0;
     let currentSectionState = null;
 
-    // Five-point labels make the scale easy to read; short ticks fill the gaps.
-    for (let value = 0; value <= 100; value += 5) {
+    // Match the reference's 0–100 scale: one short tick per point and a label
+    // at every fifth point.
+    for (let value = 0; value <= 100; value += 1) {
         const tick = document.createElement("span");
-        const isMajorTick = value % 25 === 0;
+        const isMajorTick = value % 5 === 0;
         tick.className = isMajorTick ? "ruler-tick is-major" : "ruler-tick";
         tick.style.setProperty("--tick-position", `${value}%`);
         rulerTicks.append(tick);
@@ -102,11 +103,13 @@ if (scrollRuler && mainContent) {
         }
     }
 
-    const measureSectionPositions = () => {
-        sectionPositions = new Map(pageSections.map((section) => [
+    const measureSections = () => {
+        const metrics = pageSections.map((section) => ({
             section,
-            section.getBoundingClientRect().top + window.scrollY
-        ]));
+            top: section.getBoundingClientRect().top + window.scrollY
+        }));
+
+        return metrics;
     };
 
     const rebuildSectionNavigation = () => {
@@ -133,7 +136,7 @@ if (scrollRuler && mainContent) {
             sectionButtons.set(section, button);
         });
 
-        measureSectionPositions();
+        measureSections();
     };
 
     const updateRuler = () => {
@@ -154,21 +157,34 @@ if (scrollRuler && mainContent) {
         const progressPercent = Math.round(progress * 100);
         const sectionMetrics = measureSections();
 
-        scrollRuler.style.setProperty("--scroll-ratio", String(progress));
         scrollRuler.style.setProperty("--scroll-position", `${progress * 100}%`);
+        scrollRuler.classList.toggle("is-at-start", progressPercent === 0);
+        scrollRuler.classList.toggle("is-at-end", progressPercent === 100);
         if (progressPercent !== lastProgressPercent) {
             rulerTrack.setAttribute("aria-valuenow", String(progressPercent));
             rulerTrack.setAttribute("aria-valuetext", `${progressPercent}% through page`);
-            rulerCurrent.textContent = `${progressPercent}%`;
+
+            const shouldFlip = lastProgressPercent >= 0
+                && !prefersReducedMotion
+                && performance.now() - lastFlipAt >= 175;
+            rulerCurrentValue.textContent = String(progressPercent);
+
+            if (shouldFlip) {
+                rulerCurrentValue.classList.remove("is-flipping");
+                // Restart the split-flap animation for this new reading.
+                void rulerCurrentValue.offsetWidth;
+                rulerCurrentValue.classList.add("is-flipping");
+                lastFlipAt = performance.now();
+            }
+
             lastProgressPercent = progressPercent;
         }
 
         const sectionReadingLine = scrollPosition + Math.min(window.innerHeight * 0.38, 220);
         let activeSection = pageSections[0] || null;
 
-        pageSections.forEach((section) => {
+        sectionMetrics.forEach(({ section, top }) => {
             const button = sectionButtons.get(section);
-            const top = sectionPositions.get(section) || 0;
             const sectionProgress = scrollRange === 0 ? 0 : Math.min(Math.max(top / scrollRange, 0), 1);
             button.style.setProperty("--section-position", `${sectionProgress * 100}%`);
 
@@ -208,7 +224,7 @@ if (scrollRuler && mainContent) {
     // Passive scrolling plus one animation-frame update keeps layout work low.
     window.addEventListener("scroll", scheduleRulerUpdate, { passive: true });
     const handlePageResize = () => {
-        measureSectionPositions();
+        measureSections();
         scheduleRulerUpdate();
     };
     window.addEventListener("resize", handlePageResize, { passive: true });

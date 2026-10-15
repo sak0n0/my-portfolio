@@ -1,7 +1,7 @@
 /* Change these values to quickly retune the whole visual theme. */
 :root {
     color-scheme: dark;
-    --color-bg: #0b0d0b;
+    --color-bg: #101010;
     --color-surface: #111511;
     --color-text: #f0f1e9;
     --color-muted: #9a9f94;
@@ -27,17 +27,42 @@ html {
 }
 
 body {
+    position: relative;
+    isolation: isolate;
     min-width: 320px;
     margin: 0;
     overflow-x: hidden;
     background:
-        radial-gradient(ellipse at 78% 9%, rgba(75, 103, 49, 0.13), transparent 32rem),
-        radial-gradient(ellipse at 7% 48%, rgba(39, 69, 46, 0.11), transparent 36rem),
+        radial-gradient(ellipse at 78% 9%, rgba(75, 103, 49, 0.09), transparent 32rem),
+        radial-gradient(ellipse at 7% 48%, rgba(39, 69, 46, 0.07), transparent 36rem),
         var(--color-bg);
     color: var(--color-text);
     font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
+}
+
+.ambient-lights {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    opacity: 0.72;
+    pointer-events: none;
+    user-select: none;
+    filter: drop-shadow(0 0 7px rgba(36, 232, 90, 0.16));
+    animation: ambient-light-breathe 30s ease-in-out infinite alternate;
+}
+
+.ambient-light-lines {
+    stroke-width: 1.2px;
+}
+
+@keyframes ambient-light-breathe {
+    from { opacity: 0.62; }
+    to { opacity: 0.82; }
 }
 
 body::before {
@@ -167,26 +192,13 @@ a:focus-visible {
 .scroll-ruler {
     position: fixed;
     z-index: 4;
-    top: 50%;
+    top: 82px;
+    bottom: 18px;
     right: 0;
-    width: 108px;
-    height: min(68vh, 620px);
-    min-height: 280px;
-    transform: translateY(-50%);
+    width: 76px;
     color: var(--color-muted);
     font-variant-numeric: tabular-nums;
     pointer-events: none;
-}
-
-.ruler-heading {
-    position: absolute;
-    top: -1.5rem;
-    right: 0;
-    color: var(--color-dim);
-    font-size: 0.52rem;
-    font-weight: 650;
-    letter-spacing: 0.14em;
-    white-space: nowrap;
 }
 
 .ruler-scale {
@@ -198,48 +210,36 @@ a:focus-visible {
     position: absolute;
     top: 0;
     bottom: 0;
-    right: 12px;
+    right: 4px;
     width: 1px;
-    background: rgba(220, 232, 208, 0.24);
-    pointer-events: none;
-}
-
-.ruler-progress {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 11px;
-    width: 2px;
-    transform: scaleY(var(--scroll-ratio, 0));
-    transform-origin: top;
-    background: var(--color-accent);
-    box-shadow: 0 0 12px rgba(196, 241, 122, 0.45);
+    background: rgba(220, 232, 208, 0.16);
     pointer-events: none;
 }
 
 .ruler-tick {
     position: absolute;
     top: var(--tick-position);
-    right: 12px;
-    width: 7px;
+    right: 4px;
+    width: 8px;
     height: 1px;
-    transform: translate(50%, -50%);
-    background: rgba(220, 232, 208, 0.48);
+    transform: translateY(-50%);
+    background: rgba(220, 232, 208, 0.3);
 }
 
 .ruler-tick.is-major {
-    width: 13px;
-    background: rgba(220, 232, 208, 0.75);
+    width: 17px;
+    background: rgba(220, 232, 208, 0.56);
 }
 
 .ruler-number-label {
     position: absolute;
     top: var(--tick-position);
-    right: 70px;
+    right: 26px;
     width: 24px;
     transform: translateY(-50%);
-    color: var(--color-dim);
-    font-size: 0.6rem;
+    color: rgba(220, 232, 208, 0.56);
+    font-size: 0.58rem;
+    line-height: 1;
     text-align: right;
 }
 
@@ -247,31 +247,87 @@ a:focus-visible {
     position: absolute;
     z-index: 3;
     top: var(--scroll-position, 0%);
-    right: 12px;
-    width: 9px;
-    height: 9px;
-    transform: translate(50%, -50%);
-    border: 1px solid var(--color-bg);
-    border-radius: 50%;
+    right: 4px;
+    width: clamp(42px, 7vw, 78px);
+    height: 1.5px;
+    transform: translateY(-50%);
     background: var(--color-accent);
-    box-shadow: 0 0 12px rgba(196, 241, 122, 0.72);
+    box-shadow: 0 0 8px rgba(196, 241, 122, 0.38);
     pointer-events: none;
 }
 
 .ruler-current {
     position: absolute;
-    top: var(--scroll-position, 0%);
-    right: 17px;
-    min-width: 42px;
-    padding: 0.18rem 0.35rem;
-    transform: translateY(-50%);
-    border: 1px solid rgba(196, 241, 122, 0.25);
-    border-radius: 3px;
-    background: rgba(17, 21, 17, 0.94);
+    top: calc(var(--scroll-position, 0%) + 5px);
+    right: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    padding: 1px 3px;
+    border: 1px solid rgba(196, 241, 122, 0.18);
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(35, 41, 31, 0.96), rgba(13, 15, 13, 0.96));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     color: var(--color-accent);
-    font-size: 0.58rem;
-    line-height: 1.2;
+    font-size: 0.54rem;
+    font-weight: 680;
+    line-height: 1.25;
+    text-align: right;
+    white-space: nowrap;
+    perspective: 140px;
+    pointer-events: none;
+}
+
+.ruler-current-value {
+    position: relative;
+    display: inline-block;
+    min-width: 1.4em;
+    padding-inline: 0.1em;
+    transform-origin: center center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
     text-align: center;
+}
+
+.ruler-current-value::after {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: rgba(6, 8, 6, 0.5);
+    box-shadow: 0 1px rgba(240, 241, 233, 0.08);
+    content: "";
+}
+
+.ruler-current-value.is-flipping {
+    animation: ruler-readout-flip 180ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.ruler-current-unit {
+    padding-right: 0.05em;
+    color: rgba(196, 241, 122, 0.82);
+    font-size: 0.86em;
+}
+
+@keyframes ruler-readout-flip {
+    0% {
+        transform: rotateX(-86deg) translateY(-1px);
+        opacity: 0.3;
+    }
+    52% {
+        transform: rotateX(9deg) translateY(1px);
+        opacity: 1;
+    }
+    100% {
+        transform: rotateX(0) translateY(0);
+        opacity: 1;
+    }
+}
+
+.scroll-ruler.is-at-end .ruler-current {
+    top: calc(var(--scroll-position, 100%) - 5px);
+    transform: translateY(-100%);
 }
 
 .ruler-section-nav {
@@ -281,9 +337,9 @@ a:focus-visible {
 
 .ruler-section-marker {
     position: absolute;
-    z-index: 2;
+    z-index: 4;
     top: var(--section-position);
-    right: 0;
+    right: -2px;
     display: grid;
     width: 24px;
     height: 24px;
@@ -314,8 +370,8 @@ a:focus-visible {
 }
 
 .ruler-section-marker.is-current::before {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-color: var(--color-accent);
     background: var(--color-accent);
     box-shadow: 0 0 10px rgba(196, 241, 122, 0.65);
@@ -794,13 +850,12 @@ html.js-ready [data-reveal].is-visible {
     transform: translateY(0);
 }
 
-/* Keep the scale in the scrollbar gutter on narrower screens. */
+/* Keep the scale compact on smaller screens while native scrolling remains available. */
 @media (max-width: 900px) {
     .scroll-ruler {
         width: 56px;
     }
 
-    .ruler-heading,
     .ruler-number-label {
         display: none;
     }
@@ -809,25 +864,8 @@ html.js-ready [data-reveal].is-visible {
         inset-block: 0;
     }
 
-    .ruler-track {
-        right: 12px;
-    }
-
-    .ruler-progress {
-        right: 11px;
-    }
-
-    .ruler-tick {
-        right: 12px;
-    }
-
-    .ruler-indicator {
-        right: 12px;
-    }
-
     .ruler-current {
-        top: var(--scroll-position, 0%);
-        right: 28px;
+        right: 6px;
         min-width: 28px;
         padding-inline: 0.12rem;
         font-size: 0.48rem;
@@ -840,7 +878,9 @@ html.js-ready [data-reveal].is-visible {
 
 @media (max-width: 540px) {
     .scroll-ruler {
-        width: 48px;
+        top: 74px;
+        bottom: 14px;
+        width: 40px;
     }
 
     .ruler-current {
@@ -973,5 +1013,10 @@ html.js-ready [data-reveal].is-visible {
     html.js-ready [data-reveal] {
         opacity: 1;
         transform: none;
+    }
+
+    .ambient-lights {
+        animation: none;
+        opacity: 0.7;
     }
 }

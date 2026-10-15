@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0b0d0b">
+    <meta name="theme-color" content="#101010">
     <meta name="description" content="Sak's personal portfolio — a place for experiments, learning, and things built with code.">
     <title>Sak — Developer in Progress</title>
     <link rel="stylesheet" href="style.css">
@@ -11,6 +11,55 @@
 </head>
 
 <body>
+    <svg class="ambient-lights" aria-hidden="true" focusable="false" viewBox="0 0 1440 900" preserveAspectRatio="none">
+        <defs>
+            <linearGradient id="light-horizontal" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#24E85A" stop-opacity="0" />
+                <stop offset="0.24" stop-color="#24E85A" stop-opacity="0.07" />
+                <stop offset="0.52" stop-color="#24E85A" stop-opacity="0.2" />
+                <stop offset="0.78" stop-color="#24E85A" stop-opacity="0.08" />
+                <stop offset="1" stop-color="#24E85A" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="light-vertical" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#24E85A" stop-opacity="0" />
+                <stop offset="0.27" stop-color="#24E85A" stop-opacity="0.08" />
+                <stop offset="0.53" stop-color="#24E85A" stop-opacity="0.18" />
+                <stop offset="0.79" stop-color="#24E85A" stop-opacity="0.06" />
+                <stop offset="1" stop-color="#24E85A" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="light-diagonal-down" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#24E85A" stop-opacity="0" />
+                <stop offset="0.5" stop-color="#24E85A" stop-opacity="0.17" />
+                <stop offset="1" stop-color="#24E85A" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="light-diagonal-up" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0" stop-color="#24E85A" stop-opacity="0" />
+                <stop offset="0.5" stop-color="#24E85A" stop-opacity="0.16" />
+                <stop offset="1" stop-color="#24E85A" stop-opacity="0" />
+            </linearGradient>
+        </defs>
+        <g class="ambient-light-lines">
+            <rect x="48" y="117.4" width="357" height="1.2" fill="url(#light-horizontal)" />
+            <rect x="926" y="81.4" width="429" height="1.2" fill="url(#light-horizontal)" opacity="0.76" />
+            <rect x="178" y="332.4" width="244" height="1.2" fill="url(#light-horizontal)" opacity="0.68" />
+            <rect x="754" y="277.4" width="384" height="1.2" fill="url(#light-horizontal)" opacity="0.82" />
+            <rect x="94" y="615.4" width="344" height="1.2" fill="url(#light-horizontal)" opacity="0.66" />
+            <rect x="914" y="721.4" width="468" height="1.2" fill="url(#light-horizontal)" opacity="0.8" />
+            <rect x="452" y="851.4" width="276" height="1.2" fill="url(#light-horizontal)" opacity="0.7" />
+            <rect x="1082" y="473.4" width="238" height="1.2" fill="url(#light-horizontal)" opacity="0.64" />
+
+            <rect x="1174.4" y="128" width="1.2" height="168" fill="url(#light-vertical)" opacity="0.78" />
+            <rect x="689.4" y="454" width="1.2" height="171" fill="url(#light-vertical)" opacity="0.65" />
+            <rect x="1351.4" y="362" width="1.2" height="164" fill="url(#light-vertical)" opacity="0.72" />
+            <rect x="149.4" y="738" width="1.2" height="132" fill="url(#light-vertical)" opacity="0.62" />
+
+            <path d="M 438 160 L 540 218" fill="none" stroke="url(#light-diagonal-down)" stroke-linecap="round" stroke-width="1.2" opacity="0.7" />
+            <path d="M 822 610 L 902 660" fill="none" stroke="url(#light-diagonal-down)" stroke-linecap="round" stroke-width="1.2" opacity="0.58" />
+            <path d="M 994 424 L 1122 360" fill="none" stroke="url(#light-diagonal-up)" stroke-linecap="round" stroke-width="1.2" opacity="0.72" />
+            <path d="M 498 694 L 590 644" fill="none" stroke="url(#light-diagonal-up)" stroke-linecap="round" stroke-width="1.2" opacity="0.62" />
+        </g>
+    </svg>
+
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
@@ -25,15 +74,16 @@
         </nav>
     </header>
 
-    <aside class="scroll-ruler" aria-label="Page scroll navigation">
-        <span class="ruler-heading" aria-hidden="true">PAGE POSITION</span>
+    <aside class="scroll-ruler" aria-label="Page scroll position">
         <div class="ruler-scale">
             <div class="ruler-number-labels" aria-hidden="true"></div>
             <div class="ruler-track" role="progressbar" aria-label="Page scroll position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent through page"></div>
-            <div class="ruler-progress" aria-hidden="true"></div>
             <div class="ruler-ticks" aria-hidden="true"></div>
             <div class="ruler-indicator" aria-hidden="true"></div>
-            <output class="ruler-current" aria-hidden="true">0%</output>
+            <output class="ruler-current" aria-hidden="true">
+                <span class="ruler-current-value">0</span>
+                <span class="ruler-current-unit">%</span>
+            </output>
             <nav class="ruler-section-nav" aria-label="Jump to a page section"></nav>
         </div>
     </aside>
@@ -62,7 +112,7 @@
                     <img class="portrait portrait-green" src="asset/sakgreen.png" alt="">
                     <img class="portrait portrait-natural" src="asset/sak-natural.png" alt="">
                 </button>
-                <div class="hero-monogram" aria-hidden="true"><span>.</span></div>
+                <div class="hero-monogram" aria-hidden="true"><span></span></div>
                 <p class="art-caption" aria-hidden="true">LEARNING<br>BY BUILDING</p>
            </div>
 
