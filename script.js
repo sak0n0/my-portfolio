@@ -41,6 +41,38 @@ const canFollowPointer = window.matchMedia(
     "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)"
 ).matches;
 
+// Keep the ambient light tied to one animation frame, even on high-rate mice.
+if (canFollowPointer) {
+    let cursorFramePending = false;
+    let latestPointer = null;
+
+    window.addEventListener("pointermove", (event) => {
+        latestPointer = event;
+        if (cursorFramePending) return;
+
+        cursorFramePending = true;
+        window.requestAnimationFrame(() => {
+            cursorFramePending = false;
+            if (!latestPointer) return;
+            document.documentElement.style.setProperty("--cursor-x", `${latestPointer.clientX}px`);
+            document.documentElement.style.setProperty("--cursor-y", `${latestPointer.clientY}px`);
+        });
+    }, { passive: true });
+
+    document.querySelectorAll("[data-pointer-glow]").forEach((surface) => {
+        surface.addEventListener("pointermove", (event) => {
+            const bounds = surface.getBoundingClientRect();
+            surface.style.setProperty("--glow-x", `${event.clientX - bounds.left}px`);
+            surface.style.setProperty("--glow-y", `${event.clientY - bounds.top}px`);
+        }, { passive: true });
+
+        surface.addEventListener("pointerleave", () => {
+            surface.style.setProperty("--glow-x", "50%");
+            surface.style.setProperty("--glow-y", "50%");
+        });
+    });
+}
+
 if (heroArt && canFollowPointer) {
     const moveArtwork = (event) => {
         const bounds = heroArt.getBoundingClientRect();
@@ -207,6 +239,17 @@ if (scrollRuler && mainContent) {
                     button.removeAttribute("aria-current");
                 }
             });
+
+            document.querySelectorAll(".nav-links a[href^='#']").forEach((link) => {
+                const isCurrent = activeSection?.id !== "top" && link.hash === `#${activeSection?.id}`;
+                link.classList.toggle("is-current", isCurrent);
+                if (isCurrent) {
+                    link.setAttribute("aria-current", "location");
+                } else {
+                    link.removeAttribute("aria-current");
+                }
+            });
+
             currentSectionState = activeSection;
         }
     };
@@ -249,4 +292,86 @@ if (scrollRuler && mainContent) {
             attributeFilter: ["id", "data-nav-label"]
         });
     }
+}
+
+// Claude portfolio chat. The API key stays on the server; this page only calls
+// the same-origin /api/chat endpoint.
+const claudeChat = document.querySelector(".claude-chat");
+
+if (claudeChat) {
+    const launcher = claudeChat.querySelector(".claude-chat-launcher");
+    const panel = claudeChat.querySelector(".claude-chat-panel");
+    const closeButton = claudeChat.querySelector(".claude-chat-close");
+    const form = claudeChat.querySelector(".claude-chat-form");
+    const input = claudeChat.querySelector("#claude-chat-input");
+    const messageList = claudeChat.querySelector(".claude-chat-messages");
+    const conversation = [];
+
+    const setOpen = (isOpen) => {
+        panel.hidden = !isOpen;
+        launcher.setAttribute("aria-expanded", String(isOpen));
+        if (isOpen) input.focus();
+        else launcher.focus();
+    };
+
+    const appendMessage = (content, role, extraClass = "") => {
+        const message = document.createElement("p");
+        message.className = `claude-chat-message is-${role}${extraClass ? ` ${extraClass}` : ""}`;
+        message.textContent = content;
+        messageList.append(message);
+        messageList.scrollTop = messageList.scrollHeight;
+        return message;
+    };
+
+    launcher.addEventListener("click", () => setOpen(panel.hidden));
+    closeButton.addEventListener("click", () => setOpen(false));
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !panel.hidden) setOpen(false);
+    });
+
+    input.addEventListener("input", () => {
+        input.style.height = "auto";
+        input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    });
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const userText = input.value.trim();
+        if (!userText || form.dataset.sending === "true") return;
+
+        appendMessage(userText, "user");
+        conversation.push({ role: "user", content: userText });
+        input.value = "";
+        input.style.height = "auto";
+        form.dataset.sending = "true";
+        const sendButton = form.querySelector("button[type='submit']");
+        sendButton.disabled = true;
+        input.disabled = true;
+        const pendingMessage = appendMessage("Thinking…", "assistant", "is-pending");
+
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: conversation.slice(-12) })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Claude couldn’t reply just now.");
+
+            const reply = typeof data.reply === "string" ? data.reply.trim() : "";
+            if (!reply) throw new Error("Claude returned an empty reply. Please try again.");
+            pendingMessage.remove();
+            conversation.push({ role: "assistant", content: reply });
+            appendMessage(reply, "assistant");
+        } catch (error) {
+            pendingMessage.remove();
+            conversation.pop();
+            appendMessage(error.message || "I couldn’t connect just now. Please try again.", "assistant", "is-error");
+        } finally {
+            form.dataset.sending = "false";
+            sendButton.disabled = false;
+            input.disabled = false;
+            input.focus();
+        }
+    });
 }
